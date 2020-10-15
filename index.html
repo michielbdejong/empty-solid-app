@@ -28,7 +28,7 @@
     }
     async function popupLogin() {
       let session = await solid.auth.currentSession();
-      let popupUri = 'https://solid.community/common/popup.html';
+      let popupUri = 'https://solidcommunity.net/common/popup.html';
       if (!session) {
         session = await solid.auth.popupLogin({ popupUri });
       }
