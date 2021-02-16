@@ -11,16 +11,19 @@
   </body>
   <script src="./solid-auth-fetcher.bundle.js"></script>
   <script>
-    window.onload = async () => {
-      const TEST_URL = 'https://michielbdejong.solidcommunity.net/private/';
-      document.write(`Testing access to ${TEST_URL} using solid-auth-fetcher: `);
+    async function go () {
+      const testUrl = document.getElementById('testUrl').value;
+      const oidcIssuer = document.getElementById('oidcIssuer').value;
+      document.getElementById('status').innerText = `Testing access to ${testUrl} using solid-auth-fetcher:`;
       const authFetcher = await solidAuthFetcher.customAuthFetcher();
-      const result = await solidAuthFetcher.fetch(TEST_URL);
-      document.write(`${result.status}<br>`);
+      const result = await solidAuthFetcher.fetch(testUrl);
+      document.getElementById('status').innerText += ` ${result.status}`;
       if (result.status === 401) {
-        document.write('Logging in!<br>');
+        document.getElementById('status').innerText += ` -> logging in using ${oidcIssuer}!`;
+        // Give the user time to read that before the redirect:
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const session = await authFetcher.login({
-          oidcIssuer: new URL(TEST_URL).origin,
+          oidcIssuer,
           redirect: location.href
         });
         // FIXME: avoid this hard-coded timeout
@@ -29,5 +32,10 @@
         window.location = session.neededAction.redirectUrl;
       }
     }
+    window.onload = go;
   </script>
-</html>
+  <p>URL to access: <input value="https://michielbdejong.solidcommunity.net/private/" id="testUrl" style="width: 500;">
+    <input type="submit" value="Go" onclick="go();"></p>
+  <p>Your WebID provider: <input value="https://solidcommunity.net/" id="oidcIssuer" style="width: 200;"></p>
+  <p>Status: <span id="status"></span></p>
+  </html>
