@@ -9,43 +9,25 @@
       (UI goes here...)
     </div>
   </body>
-  <script src="./solid-auth-client.bundle.js"></script>
+  <script src="./solid-auth-fetcher.bundle.js"></script>
   <script>
-    window.onload = () => {
-      console.log('document ready')
-      solid.auth.trackSession(session => {
-        if (!session) {
-          console.log('The user is not logged in')
-          document.getElementById('loginBanner').innerHTML = `<button onclick="popupLogin()">Log in</button>`;
-          document.getElementById('ui').style.display = 'none';
-        } else {
-          console.log(`Logged in as ${session.webId}`)
-
-          document.getElementById('loginBanner').innerHTML = `Logged in as ${session.webId} <button onclick="solid.auth.logout()">Log out</button>`;
-          document.getElementById('ui').style.display = 'block';
-        }
-      })
-    }
-    async function popupLogin() {
-      let session = await solid.auth.currentSession();
-      let popupUri = 'https://solid.community/common/popup.html';
-      if (!session) {
-        session = await solid.auth.popupLogin({ popupUri });
+    window.onload = async () => {
+      const TEST_URL = 'https://michielbdejong.solidcommunity.net/private/';
+      document.write(`Testing access to ${TEST_URL} using solid-auth-fetcher: `);
+      const authFetcher = await solidAuthFetcher.customAuthFetcher();
+      const result = await solidAuthFetcher.fetch(TEST_URL);
+      document.write(`${result.status}<br>`);
+      if (result.status === 401) {
+        document.write('Logging in!<br>');
+        const session = await authFetcher.login({
+          oidcIssuer: new URL(TEST_URL).origin,
+          redirect: location.href
+        });
+        // FIXME: avoid this hard-coded timeout
+        // Without this you end up at http://localhost:5000/undefined
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        window.location = session.neededAction.redirectUrl;
       }
-    }
-    
-    const KEY_PREFIX = 'resource='
-    if (window.location.hash.length > 2) {
-      pairs = window.location.hash.substring(1).split('&')
-      pairs.map(pair => {
-        console.log(pair, pair.substring(0, KEY_PREFIX.length), KEY_PREFIX)
-        if (pair.substring(0, KEY_PREFIX.length) === KEY_PREFIX) {
-          console.log(pair.substring(KEY_PREFIX.length))
-          console.log('resource opened', pair.substring(KEY_PREFIX.length))
-          // const response = await solid.auth.fetch(url);
-          // const wssUrl = response.headers.get('Updates-Via')
-        }
-      })
     }
   </script>
 </html>

@@ -1,4 +1,6 @@
 # empty-solid-app
 Empty Solid app
 
-See also the bulma-react-tripledoc branch of this repo for a slightly less barebones boilerplate.
+This mainly shows how to create a Solid app using Solid-Auth-Fetcher. The source code
+can be seen with the `View Source` feature of your browser, or on [https://github.com/michielbdejong/empty-solid-app](https://github.com/michielbdejong/empty-solid-app).
+It is adapted from [https://github.com/solid/solid-auth-fetcher/tree/master/examples/bundle](https://github.com/solid/solid-auth-fetcher/tree/master/examples/bundle).
