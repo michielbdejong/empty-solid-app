@@ -8,10 +8,10 @@
     "@types/node": "^12.7.8",
     "@types/react": "^16.9.4",
     "@types/react-dom": "^16.9.4",
-    "@types/solid-auth-client": "^2.3.1",
     "@types/solid__react": "^1.6.1",
+    "@types/solid-auth-client": "^2.3.1",
     "bulma": "^0.7.5",
-    "node-sass": "^4.12.0",
+    "node-sass": "^9.0.0",
     "rdf-namespaces": "^1.4.0",
     "react": "^16.10.1",
     "react-dom": "^16.11.0",
@@ -41,6 +41,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {}
+  }
 }
