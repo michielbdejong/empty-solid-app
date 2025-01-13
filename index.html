@@ -13,8 +13,24 @@
   </body>
   <script type="text/javascript" src="/solid-client-authn.bundle.js"></script>
   <script>
+    let sessionInfo;
     const session = new solidClientAuthentication.Session();
-
+    // When loading the page, check if you are being redirected from the IdP
+    session
+      .handleIncomingRedirect(window.location.href)
+      .then((sI) => {
+        sessionInfo = sI;
+        if(!sessionInfo.isLoggedIn) {
+          // If you are not logged in, initiate the login
+          session.login({
+            redirectUrl: window.location.origin,
+            oidcIssuer: document.getElementById("oidcIssuer").value,
+          });
+        } else {
+          // The page was loaded after a redirect from the IdP
+          console.log(`logged in as ${sessionInfo.webId}`);
+        }
+      });
     async function test () {
       const testUrl = document.getElementById('testUrl').value;
       document.getElementById('testStatus').innerText = `Testing access to ${testUrl} using inrupt-solid-client-auth-js:`;
@@ -23,7 +39,6 @@
     }
 
     async function check () {
-      const sessionInfo = session.handleIncomingRedirect(window.location.href);
       const oidcIssuer = document.getElementById('oidcIssuer').value;
       // Give the user time to read that before the redirect:
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -36,7 +51,7 @@
         document.getElementById('loginStatus').innerText += ` -> logging in using ${oidcIssuer}!`;
         // If you are not logged in, initiate the login
         const params = {
-          redirectUrl: window.location.href,
+          redirectUrl: window.location.origin,
           oidcIssuer: document.getElementById("oidcIssuer").value,
         };
         console.log("logging in", params);
