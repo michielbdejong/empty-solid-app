@@ -13,33 +13,39 @@
   </body>
   <script type="text/javascript" src="/solid-client-authn.bundle.js"></script>
   <script>
-    let sessionInfo;
-    const session = new solidClientAuthentication.Session();
-    // When loading the page, check if you are being redirected from the IdP
-    session
-      .handleIncomingRedirect(window.location.href)
-      .then((sI) => {
-        sessionInfo = sI;
-      });
+    let session, sessionInfo;
+    async function getSessionAndInfo() {
+      if (sessionInfo?.isLoggedIn) {
+        return;
+      }
+      session = new solidClientAuthentication.Session();
+      sessionInfo = await session.handleIncomingRedirect(window.location.href);
+    }
+
     async function test () {
+      await getSessionAndInfo();
       const testUrl = document.getElementById('testUrl').value;
+      if(sessionInfo.isLoggedIn) {
+        document.getElementById('loginStatus').innerText += `Logged in as ${sessionInfo.webId}`;
+      } else {
+        document.getElementById('loginStatus').innerText += 'you are not logged in';
+      }
       document.getElementById('testStatus').innerText = `Testing access to ${testUrl} using inrupt-solid-client-auth-js:`;
       const result = await session.fetch(testUrl);
       document.getElementById('testStatus').innerText += ` ${result.status}`;
     }
 
     async function check () {
+      await getSessionAndInfo();
       const oidcIssuer = document.getElementById('oidcIssuer').value;
-      // Give the user time to read that before the redirect:
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // copied from https://github.com/inrupt/solid-client-authn-js/blob/c3a560e92d1d0adceb4c8e58077994159a9943b2/packages/browser/examples/single/script/index.html#L17-L34
       
       if(sessionInfo.isLoggedIn) {
         document.getElementById('loginStatus').innerText += `Logged in as ${sessionInfo.webId}`;
       } else {
         document.getElementById('loginStatus').innerText += 'you are not logged in';
         document.getElementById('loginStatus').innerText += ` -> logging in using ${oidcIssuer}!`;
-        // If you are not logged in, initiate the login
+        // Give the user time to read that before the redirect:
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const params = {
           redirectUrl: window.location.origin,
           oidcIssuer: document.getElementById("oidcIssuer").value,
