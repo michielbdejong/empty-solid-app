@@ -4,39 +4,44 @@
     <title>Solid App</title>
   </head>
   <body>
-    <div id="loginBanner"></div>
-    <div id="ui" style="display:none">
-      (UI goes here...)
-    </div>
+    <p>URL to access: <input value="https://michielbdejong.solidcommunity.net/private/" id="testUrl" style="width: 500;">
+      <input type="submit" value="Test" onclick="test();"></p>
+    <p>Status: <span id="testStatus"></span></p>
+    <p>Your WebID provider: <input value="https://solidcommunity.net" id="oidcIssuer" style="width: 300;"> (or https://broker.inrupt.com or https://localhost:8443 etc). <input type="submit" value="Check" onclick="check();"></p>
+    <p>Logged in: <span id="loginStatus"></span></p>
+    <p><a href="https://github.com/michielbdejong/empty-solid-app">Fork me on GitHub!</a></p>
   </body>
-  <script src="./solid-auth-fetcher.bundle.js"></script>
+  <script type="text/javascript" src="/solid-client-authn.bundle.js"></script>
   <script>
-    async function go () {
+    const session = new solidClientAuthentication.Session();
+
+    async function test () {
       const testUrl = document.getElementById('testUrl').value;
+      document.getElementById('testStatus').innerText = `Testing access to ${testUrl} using inrupt-solid-client-auth-js:`;
+      const result = await session.fetch(testUrl);
+      document.getElementById('testStatus').innerText += ` ${result.status}`;
+    }
+
+    async function check () {
+      const sessionInfo = session.handleIncomingRedirect(window.location.href);
       const oidcIssuer = document.getElementById('oidcIssuer').value;
-      document.getElementById('status').innerText = `Testing access to ${testUrl} using solid-auth-fetcher:`;
-      const authFetcher = await solidAuthFetcher.customAuthFetcher();
-      const result = await solidAuthFetcher.fetch(testUrl);
-      document.getElementById('status').innerText += ` ${result.status}`;
-      if (result.status === 401) {
-        document.getElementById('status').innerText += ` -> logging in using ${oidcIssuer}!`;
-        // Give the user time to read that before the redirect:
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const session = await authFetcher.login({
-          oidcIssuer,
-          redirect: location.href
-        });
-        // FIXME: avoid this hard-coded timeout
-        // Without this you end up at http://localhost:5000/undefined
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        window.location = session.neededAction.redirectUrl;
+      // Give the user time to read that before the redirect:
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // copied from https://github.com/inrupt/solid-client-authn-js/blob/c3a560e92d1d0adceb4c8e58077994159a9943b2/packages/browser/examples/single/script/index.html#L17-L34
+      
+      if(sessionInfo.isLoggedIn) {
+        document.getElementById('loginStatus').innerText += `Logged in as ${sessionInfo.webId}`;
+      } else {
+        document.getElementById('loginStatus').innerText += 'you are not logged in';
+        document.getElementById('loginStatus').innerText += ` -> logging in using ${oidcIssuer}!`;
+        // If you are not logged in, initiate the login
+        const params = {
+          redirectUrl: window.location.href,
+          oidcIssuer: document.getElementById("oidcIssuer").value,
+        };
+        console.log("logging in", params);
+        session.login(params);
       }
     }
-    // window.onload = go;
   </script>
-  <p>URL to access: <input value="https://michielbdejong.solidcommunity.net/private/" id="testUrl" style="width: 500;">
-    <input type="submit" value="Go" onclick="go();"></p>
-  <p>Your WebID provider: <input value="https://solidcommunity.net" id="oidcIssuer" style="width: 300;"> (or https://broker.inrupt.com or https://localhost:8443 etc).</p>
-  <p>Status: <span id="status"></span></p>
-  <p><a href="https://github.com/michielbdejong/empty-solid-app">Fork me on GitHub!</a></p>
-  </html>
+</html>
