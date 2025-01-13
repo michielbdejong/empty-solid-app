@@ -20,16 +20,6 @@
       .handleIncomingRedirect(window.location.href)
       .then((sI) => {
         sessionInfo = sI;
-        if(!sessionInfo.isLoggedIn) {
-          // If you are not logged in, initiate the login
-          session.login({
-            redirectUrl: window.location.origin,
-            oidcIssuer: document.getElementById("oidcIssuer").value,
-          });
-        } else {
-          // The page was loaded after a redirect from the IdP
-          console.log(`logged in as ${sessionInfo.webId}`);
-        }
       });
     async function test () {
       const testUrl = document.getElementById('testUrl').value;
